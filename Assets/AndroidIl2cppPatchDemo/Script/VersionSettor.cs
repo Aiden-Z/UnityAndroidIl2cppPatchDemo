@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.Networking;
 
 public class VersionSettor : MonoBehaviour {
     public int updateVersion = 0;
@@ -48,14 +49,14 @@ public class VersionSettor : MonoBehaviour {
 
         //2. extract files from zip
         string zipPatchFile = string.Format(ZIP_PATCH_FORMAT, updateVersion);
-        WWW zipPatchFileReader = new WWW(zipPatchFile);
+        var zipPatchFileReader = new UnityWebRequest(zipPatchFile);
         while (!zipPatchFileReader.isDone) { yield return null; }
         if (zipPatchFileReader.error != null)
         {      
             messageBox.Show("failed to get zip patch file:" + zipPatchFile, "ok", () => { messageBox.Close(); });
             yield break;
         }
-        byte[] zipContent = zipPatchFileReader.bytes;
+        byte[] zipContent = zipPatchFileReader.downloadHandler.data;
         ZipHelper.UnZipBytes(zipContent, runtimePatchPath, "", true);
 
         //3. prepare libil2cpp, unzip with name: libil2cpp.so.new
